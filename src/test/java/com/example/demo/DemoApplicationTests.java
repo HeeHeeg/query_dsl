@@ -243,8 +243,6 @@ class DemoApplicationTests {
 
 
 
-
-
 	@Autowired
 	MemberRepository memberRepository;
 	@Autowired

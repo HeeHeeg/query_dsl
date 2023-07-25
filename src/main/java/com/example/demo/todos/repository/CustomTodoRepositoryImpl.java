@@ -1,31 +1,34 @@
 package com.example.demo.todos.repository;
 
-import com.example.demo.members.domain.entity.QMember;
 import com.example.demo.todos.domain.dto.TodoCondition;
-import com.example.demo.todos.domain.entity.QTodo;
-import com.example.demo.todos.service.CustomTodoRepository;
+import com.example.demo.todos.domain.entity.Todo;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+
+import java.util.List;
+import static com.example.demo.todos.domain.entity.QTodo.todo;
+import static com.example.demo.members.domain.entity.QMember.member;
 
 public class CustomTodoRepositoryImpl implements CustomTodoRepository {
 
     private final JPAQueryFactory queryFactory;
-    private final QTodo qTodo = QTodo.todo;
-    private final QMember qMember = QMember.member;
 
     public CustomTodoRepositoryImpl(EntityManager entityManager) { // ㅋㅓ리 팩토리
         this.queryFactory = new JPAQueryFactory(entityManager);
     }
-
-    public void findAllByCondition(PageRequest request,
-                                   TodoCondition condition
+    @Override
+    public Page<Todo> findAllByCondition(PageRequest request,
+                                         TodoCondition condition
     ) {
-        queryFactory
-                .select(qTodo)
-                .from(qTodo)
-                .leftJoin(qTodo.member, qMember)
+        JPAQuery<Todo> query = queryFactory
+                .select(todo)
+                .from(todo)
+                .leftJoin(todo.member, member)
                 .fetchJoin()
                 .where(
                         contentContains(condition.getContent()),
@@ -33,19 +36,26 @@ public class CustomTodoRepositoryImpl implements CustomTodoRepository {
                 )
                 .offset(request.getPageNumber())
                 .limit(request.getPageSize());
-
-        contentContains(condition.getContent());
-
+        List<Todo> content = query.fetch();
+        Long totalSize = queryFactory
+                .select(todo.count())
+                .from(todo)
+                .where(
+                        contentContains(condition.getContent()),
+                        titleEq(condition.getTitle())
+                )
+                .fetchOne();
+        return new PageImpl<>(content, request, totalSize); // list, pageable, long 순서로 넣어주는 것.
     }
     private  BooleanExpression contentContains(String content) { // 여기 안에서만 쓸거라 static지워줌. 여기는 콘텐츠만 있으면 되ㅑㄴ다.
         return
                 content == null ? null
-                        : qTodo.content.contains(content);  // condition.getContent()이게 null이면  null을 리턴할거고 : 아니면 이것 반환.
+                        : todo.content.contains(content);  // condition.getContent()이게 null이면  null을 리턴할거고 : 아니면 이것 반환.
     }
 
     private  BooleanExpression titleEq(String title) {
         return
                 title == null ? null
-                        : qTodo.content.contains(title);
+                        : todo.content.contains(title);
     }
 }

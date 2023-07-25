@@ -158,7 +158,7 @@ class TodoControllerTest {
         void likeTitle() throws Exception{
             mockMvc.perform(
                             get("/api/v1/todos")
-                                    .param("title", "t")
+                                    .param("title", "a")
                     )
                     .andExpect(
                             status().isOk())
@@ -168,10 +168,10 @@ class TodoControllerTest {
                             jsonPath("$.content.[0].id").isNotEmpty())
                     .andExpect(
                             jsonPath("$.content.[0].title")
-                                    .value("t"))
+                                    .value("a"))
                     .andExpect(
                             jsonPath("$.content.[0].content")
-                                    .value("t"))
+                                    .value("a"))
                     .andExpect(jsonPath("$.totalElements")
                             .value(1))
             ;
