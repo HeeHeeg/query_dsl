@@ -32,7 +32,10 @@ public class CustomTodoRepositoryImpl implements CustomTodoRepository {
                 .fetchJoin()
                 .where(
                         contentContains(condition.getContent()),
-                        titleEq(condition.getTitle())
+                        titleEq(condition.getTitle()),
+                        isDoneEq(condition.getIsDone()),
+                        islikeGoe(condition.getLikeGoe()),
+                        islikeLoe(condition.getLikeLoe())
                 )
                 .offset(request.getPageNumber())
                 .limit(request.getPageSize());
@@ -42,7 +45,10 @@ public class CustomTodoRepositoryImpl implements CustomTodoRepository {
                 .from(todo)
                 .where(
                         contentContains(condition.getContent()),
-                        titleEq(condition.getTitle())
+                        titleEq(condition.getTitle()),
+                        isDoneEq(condition.getIsDone()),
+                        islikeGoe(condition.getLikeGoe()),
+                        islikeLoe(condition.getLikeLoe())
                 )
                 .fetchOne();
         return new PageImpl<>(content, request, totalSize); // list, pageable, long 순서로 넣어주는 것.
@@ -58,4 +64,17 @@ public class CustomTodoRepositoryImpl implements CustomTodoRepository {
                 title == null ? null
                         : todo.content.contains(title);
     }
+    private  BooleanExpression isDoneEq(Boolean isDone) {
+        return isDone == null ? null
+                        : todo.isDone.eq(isDone);
+    }
+    private  BooleanExpression islikeGoe(Integer likeGoe) {
+        return likeGoe == null ? null
+                : todo.likeCount.goe(likeGoe);
+    }
+    private  BooleanExpression islikeLoe(Integer likeLoe) {
+        return likeLoe == null ? null
+                : todo.likeCount.loe(likeLoe);
+    }
 }
+
